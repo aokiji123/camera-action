@@ -1,18 +1,23 @@
-import { FAQ } from "./shared/components/FAQ";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Home } from "./pages/Home";
+import { Login } from "./pages/Login";
+import { SignUp } from "./pages/SignUp";
+import { NotFound } from "./pages/NotFound";
 import { Footer } from "./shared/components/Footer";
-import { GreetingsHeader } from "./shared/components/GreetingsHeader";
-import { ShowSlider } from "./shared/components/ShowSlider";
-import { WhyUs } from "./shared/components/WhyUs";
+import { Films } from "./pages/Films";
 
 function App() {
   return (
-    <div>
-      <GreetingsHeader />
-      <ShowSlider />
-      <WhyUs />
-      <FAQ />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/films" element={<Films />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       <Footer />
-    </div>
+    </BrowserRouter>
   );
 }
 

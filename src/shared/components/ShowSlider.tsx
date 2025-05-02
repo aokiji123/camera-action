@@ -5,11 +5,29 @@ import { Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
+import {
+  getTrendingMovies,
+  getImageUrl,
+  type Movie,
+} from "../api/movieService";
 
 export const ShowSlider = () => {
   const prevRef = useRef<HTMLDivElement>(null);
   const nextRef = useRef<HTMLDivElement>(null);
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setIsLoading(true);
+      const data = await getTrendingMovies();
+      setMovies(data);
+      setIsLoading(false);
+    };
+
+    fetchMovies();
+  }, []);
 
   useEffect(() => {
     if (swiper && prevRef.current && nextRef.current) {
@@ -27,9 +45,9 @@ export const ShowSlider = () => {
       <div className="relative w-full">
         <div
           ref={prevRef}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer p-4 rounded-r-lg transition-colors hover:bg-gray-800/30"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer p-4 rounded-r-lg"
         >
-          <FaChevronLeft className="text-[32px] text-white" />
+          <FaChevronLeft className="text-[32px] text-white hover:text-gray-400" />
         </div>
 
         <div className="mx-[60px]">
@@ -38,7 +56,7 @@ export const ShowSlider = () => {
             spaceBetween={16}
             slidesPerView={5}
             loop={true}
-            speed={800}
+            speed={200}
             navigation={{
               prevEl: prevRef.current,
               nextEl: nextRef.current,
@@ -46,19 +64,41 @@ export const ShowSlider = () => {
             onSwiper={setSwiper}
             className="w-full"
           >
-            {Array.from({ length: 20 }).map((_, index) => (
-              <SwiperSlide key={index}>
-                <div className="w-full h-[325px] bg-gray-800 transition-transform cursor-pointer"></div>
-              </SwiperSlide>
-            ))}
+            {isLoading
+              ? // Loading placeholders
+                Array.from({ length: 10 }).map((_, index) => (
+                  <SwiperSlide key={`loading-${index}`}>
+                    <div className="w-full h-[325px] bg-gray-800 animate-pulse rounded-lg"></div>
+                  </SwiperSlide>
+                ))
+              : // Actual movie slides
+                movies.map((movie) => (
+                  <SwiperSlide key={movie.id}>
+                    <div className="w-full h-[325px] overflow-hidden rounded-lg relative group">
+                      <img
+                        src={getImageUrl(movie.poster_path)}
+                        alt={movie.title}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transform translate-y-full group-hover:translate-y-0 transition-transform">
+                        <h3 className="text-white font-semibold text-lg truncate">
+                          {movie.title}
+                        </h3>
+                        <p className="text-white/80 text-sm">
+                          {movie.release_date.split("-")[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                ))}
           </Swiper>
         </div>
 
         <div
           ref={nextRef}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer p-4 rounded-l-lg transition-colors hover:bg-gray-800/30"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer p-4 rounded-l-lg"
         >
-          <FaChevronRight className="text-[32px] text-white" />
+          <FaChevronRight className="text-[32px] text-white hover:text-gray-400" />
         </div>
       </div>
     </div>
