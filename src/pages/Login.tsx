@@ -33,7 +33,7 @@ export const Login = () => {
         }}
       >
         <p className="text-[45px] font-extrabold text-center leading-[60px] uppercase mb-[36px]">
-          Зареєструватися
+          Увійти в акаунт
         </p>
         <form className="flex flex-col items-center justify-center gap-[24px]">
           <input
