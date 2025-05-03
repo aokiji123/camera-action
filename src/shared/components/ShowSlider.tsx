@@ -65,14 +65,12 @@ export const ShowSlider = () => {
             className="w-full"
           >
             {isLoading
-              ? // Loading placeholders
-                Array.from({ length: 10 }).map((_, index) => (
+              ? Array.from({ length: 10 }).map((_, index) => (
                   <SwiperSlide key={`loading-${index}`}>
                     <div className="w-full h-[325px] bg-gray-800 animate-pulse rounded-lg"></div>
                   </SwiperSlide>
                 ))
-              : // Actual movie slides
-                movies.map((movie) => (
+              : movies.map((movie) => (
                   <SwiperSlide key={movie.id}>
                     <div className="w-full h-[325px] overflow-hidden rounded-lg relative group">
                       <img

@@ -3,31 +3,31 @@ import { Header } from "../shared/components/Header";
 import { Select } from "../shared/components/Select";
 import { useState, useEffect, useCallback } from "react";
 import background from "../assets/header-bg.png";
-import { Card } from "../shared/components/Card";
+import { SeriesCard } from "../shared/components/SeriesCard";
 import {
-  Movie,
-  getTrendingMovies,
-  getGenres,
-  getFilteredMovies,
-  searchMovies,
-  FilmType,
+  type Series,
+  getTrendingSeries,
+  getSeriesGenres,
+  getFilteredSeries,
+  searchSeries,
+  SeriesType,
 } from "../shared/api/movieService";
 
-export function Films() {
-  const [filmType, setFilmType] = useState<FilmType | "">("");
+export function Series() {
+  const [seriesType, setSeriesType] = useState<SeriesType | "">("");
   const [genre, setGenre] = useState("");
   const [year, setYear] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [genreList, setGenreList] = useState<
     { value: string; label: string }[]
   >([]);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-  const filmTypeOptions = [
-    { value: "film", label: "фільм" },
-    { value: "cartoon", label: "мультфільм" },
+  const seriesTypeOptions = [
+    { value: "tv", label: "серіал" },
+    { value: "anime", label: "аніме" },
   ];
 
   const yearOptions = [
@@ -49,51 +49,51 @@ export function Films() {
     { value: "2024", label: "2024" },
   ];
 
-  const fetchTrendingMovies = useCallback(async () => {
+  const fetchTrendingSeries = useCallback(async () => {
     setIsLoading(true);
-    const data = await getTrendingMovies();
-    setMovies(data);
+    const data = await getTrendingSeries();
+    setSeriesList(data);
     setIsLoading(false);
   }, []);
 
   const applyFilters = useCallback(async () => {
     if (searchQuery.trim()) {
       setIsLoading(true);
-      const data = await searchMovies(searchQuery);
-      setMovies(data);
+      const data = await searchSeries(searchQuery);
+      setSeriesList(data);
       setIsLoading(false);
       setActiveFilter("search");
       return;
     }
 
-    if (filmType || genre || year) {
+    if (seriesType || genre || year) {
       setIsLoading(true);
-      const data = await getFilteredMovies({
-        filmType: filmType as FilmType | undefined,
+      const data = await getFilteredSeries({
+        seriesType: seriesType as SeriesType | undefined,
         genre: genre || undefined,
         year: year || undefined,
       });
-      setMovies(data);
+      setSeriesList(data);
       setIsLoading(false);
 
-      if (filmType && genre && year) {
+      if (seriesType && genre && year) {
         setActiveFilter("combined");
-      } else if (filmType) {
-        setActiveFilter("filmType");
+      } else if (seriesType) {
+        setActiveFilter("seriesType");
       } else if (genre) {
         setActiveFilter("genre");
       } else if (year) {
         setActiveFilter("year");
       }
     } else {
-      fetchTrendingMovies();
+      fetchTrendingSeries();
       setActiveFilter(null);
     }
-  }, [filmType, genre, year, searchQuery, fetchTrendingMovies]);
+  }, [seriesType, genre, year, searchQuery, fetchTrendingSeries]);
 
   useEffect(() => {
     const fetchGenres = async () => {
-      const genres = await getGenres();
+      const genres = await getSeriesGenres();
       const formattedGenres = genres.map((g) => ({
         value: g.id.toString(),
         label: g.name,
@@ -102,8 +102,8 @@ export function Films() {
     };
 
     fetchGenres();
-    fetchTrendingMovies();
-  }, [fetchTrendingMovies]);
+    fetchTrendingSeries();
+  }, [fetchTrendingSeries]);
 
   useEffect(() => {
     applyFilters();
@@ -114,12 +114,12 @@ export function Films() {
   };
 
   const resetFilters = async () => {
-    setFilmType("");
+    setSeriesType("");
     setGenre("");
     setYear("");
     setSearchQuery("");
     setActiveFilter(null);
-    fetchTrendingMovies();
+    fetchTrendingSeries();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -135,13 +135,13 @@ export function Films() {
 
     if (
       activeFilter === "combined" ||
-      (activeFilter && (filmType || genre || year))
+      (activeFilter && (seriesType || genre || year))
     ) {
       const parts = [];
 
-      if (filmType) {
+      if (seriesType) {
         parts.push(
-          filmTypeOptions.find((f) => f.value === filmType)?.label || ""
+          seriesTypeOptions.find((s) => s.value === seriesType)?.label || ""
         );
       }
 
@@ -156,7 +156,7 @@ export function Films() {
       return `${parts.join(", ")}`;
     }
 
-    return "Популярні фільми";
+    return "Популярні серіали";
   };
 
   return (
@@ -202,9 +202,9 @@ export function Films() {
           >
             <div className="flex justify-between gap-[24px] items-center">
               <Select
-                options={filmTypeOptions}
-                value={filmType}
-                onChange={(val) => setFilmType(val as FilmType)}
+                options={seriesTypeOptions}
+                value={seriesType}
+                onChange={(val) => setSeriesType(val as SeriesType)}
                 minWidth="150px"
                 placeholder="тип"
               />
@@ -235,7 +235,7 @@ export function Films() {
       <div className="flex flex-col gap-[24px] px-[36px] py-[24px]">
         <div className="flex justify-between items-center">
           <p className="text-[24px] font-bold">{getFilterTitle()}</p>
-          {(filmType || genre || year || searchQuery) && (
+          {(seriesType || genre || year || searchQuery) && (
             <button
               onClick={resetFilters}
               className="flex items-center gap-[8px] text-[16px] cursor-pointer"
@@ -259,11 +259,13 @@ export function Films() {
                 </div>
               </div>
             ))
-          ) : movies.length > 0 ? (
-            movies.map((movie) => <Card key={movie.id} movie={movie} />)
+          ) : seriesList.length > 0 ? (
+            seriesList.map((series) => (
+              <SeriesCard key={series.id} series={series} />
+            ))
           ) : (
             <p className="text-center w-full text-gray-500 text-[20px]">
-              No movies found
+              No series found
             </p>
           )}
         </div>

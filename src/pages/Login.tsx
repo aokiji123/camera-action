@@ -62,7 +62,7 @@ export const Login = () => {
                 id="termsCheckbox"
                 checked={isChecked}
                 onChange={() => setIsChecked(!isChecked)}
-                className="sr-only" // Hide the actual checkbox but keep it accessible
+                className="sr-only"
               />
               <label
                 htmlFor="termsCheckbox"
