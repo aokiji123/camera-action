@@ -9,19 +9,69 @@ import { Series } from "./pages/Series";
 import { MyList } from "./pages/MyList";
 import { Payment } from "./pages/Payment";
 import { History } from "./pages/History";
+import { ProtectedRoute, GuestRoute } from "./shared/components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/films" element={<Films />} />
-        <Route path="/series" element={<Series />} />
-        <Route path="/my-list" element={<MyList />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/history" element={<History />} />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <GuestRoute>
+              <SignUp />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/films"
+          element={
+            <ProtectedRoute>
+              <Films />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/series"
+          element={
+            <ProtectedRoute>
+              <Series />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-list"
+          element={
+            <ProtectedRoute>
+              <MyList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute>
+              <Payment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />

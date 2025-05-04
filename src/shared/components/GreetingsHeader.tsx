@@ -1,7 +1,12 @@
 import background from "../../assets/header-bg.png";
 import { Header } from "./Header";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export const GreetingsHeader = () => {
+  const navigate = useNavigate();
+  const { isAuth } = useAuth();
+
   return (
     <header
       className="flex flex-col items-center h-[870px] relative"
@@ -21,24 +26,27 @@ export const GreetingsHeader = () => {
         <p className="text-[32px] font-normal text-center h-[100px] leading-[40px]">
           Перший місяць підписки даруємо безкоштовно, тож доєднуйся вже зараз!
         </p>
-        <div className="flex items-center justify-center gap-[8px]">
-          <input
-            type="email"
-            placeholder="Адреса електронної пошти"
-            className="w-[450px] h-[75px] text-[32px] font-normal rounded-[50px] border-1 border-white flex items-center justify-center mr-[8px] cursor-pointer transition-all duration-300 text-center placeholder:text-white"
-            style={{
-              background: "rgba(255, 255, 255, 0.2)",
-            }}
-          />
-          <button
-            className="w-[200px] h-[75px] text-[36px] font-bold rounded-[50px] border-1 border-white flex items-center justify-center mr-[8px] cursor-pointer transition-all duration-300"
-            style={{
-              background: "rgba(255, 255, 255, 0.2)",
-            }}
-          >
-            Увійти
-          </button>
-        </div>
+        {!isAuth && (
+          <div className="flex items-center justify-center gap-[8px]">
+            <input
+              type="email"
+              placeholder="Адреса електронної пошти"
+              className="w-[450px] h-[75px] text-[32px] font-normal rounded-[50px] border-1 border-white flex items-center justify-center mr-[8px] cursor-pointer transition-all duration-300 text-center placeholder:text-white"
+              style={{
+                background: "rgba(255, 255, 255, 0.2)",
+              }}
+            />
+            <button
+              className="w-[200px] h-[75px] text-[36px] font-bold rounded-[50px] border-1 border-white flex items-center justify-center mr-[8px] cursor-pointer transition-all duration-300"
+              style={{
+                background: "rgba(255, 255, 255, 0.2)",
+              }}
+              onClick={() => navigate("/login")}
+            >
+              Увійти
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
