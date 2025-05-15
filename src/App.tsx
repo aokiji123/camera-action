@@ -10,6 +10,7 @@ import { MyList } from "./pages/MyList";
 import { Payment } from "./pages/Payment";
 import { History } from "./pages/History";
 import { ProtectedRoute, GuestRoute } from "./shared/components/ProtectedRoute";
+import { Profile } from "./pages/Profile";
 
 function App() {
   return (
@@ -69,6 +70,14 @@ function App() {
           element={
             <ProtectedRoute>
               <History />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

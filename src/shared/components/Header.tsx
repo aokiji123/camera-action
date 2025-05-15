@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 export const Header = () => {
   const navigate = useNavigate();
-  const { isAuth, logout } = useAuth();
+  const { isAuth } = useAuth();
 
   return (
     <div className="h-[125px] w-full">
@@ -42,15 +42,7 @@ export const Header = () => {
             </ul>
           </nav>
           <div className="text-white cursor-pointer relative group">
-            <FaUser size={34} />
-            <div className="absolute right-0 mt-2 w-48 bg-black bg-opacity-80 rounded-md shadow-lg py-1 group-hover:block">
-              <button
-                onClick={logout}
-                className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left"
-              >
-                Вийти
-              </button>
-            </div>
+            <FaUser size={34} onClick={() => navigate("/profile")} />
           </div>
         </div>
       ) : (
