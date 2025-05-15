@@ -1,80 +1,107 @@
-import { FaStar, FaFilm, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { FaStar, FaQuestion } from "react-icons/fa";
 import { Movie, getImageUrl } from "../api/movieService";
+import { useState } from "react";
 
-type CardProps = {
+interface CardProps {
   movie: Movie;
-};
+}
 
 export function Card({ movie }: CardProps) {
-  const rating = movie.vote_average / 2;
+  const [imageError, setImageError] = useState(false);
 
-  const getRandomColor = () => {
-    const colors = [
-      "bg-red-600",
-      "bg-blue-600",
-      "bg-emerald-600",
-      "bg-purple-600",
-      "bg-amber-600",
-      "bg-pink-600",
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
+  // Convert rating to 5-star scale (if it exists)
+  const rating = movie.imdb_score ? movie.imdb_score / 2 : 0;
 
-  const hasImage = movie.poster_path && movie.poster_path !== "";
+  // Get the appropriate image
+  const imageUrl = movie.poster
+    ? getImageUrl(movie.poster)
+    : getImageUrl(movie.image_name);
 
-  const renderStars = () => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <FaStar key={`full-${i}`} size={16} className="text-yellow-400" />
-      );
+  // Format the movie type for display
+  const getMovieType = () => {
+    switch (movie.kind) {
+      case "movie":
+        return "Фільм";
+      case "tv_series":
+        return "Серіал";
+      case "animated_movie":
+        return "Мультфільм";
+      case "animated_series":
+        return "Мультсеріал";
+      default:
+        return "";
     }
-
-    if (hasHalfStar) {
-      stars.push(
-        <FaStarHalfAlt key="half" size={16} className="text-yellow-400" />
-      );
-    }
-
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <FaRegStar key={`empty-${i}`} size={16} className="text-gray-400" />
-      );
-    }
-
-    return stars;
   };
 
   return (
-    <div className="w-[305px]">
-      <div className="w-full h-[400px] rounded-[28px] overflow-hidden">
-        {hasImage ? (
+    <div className="w-[305px] cursor-pointer hover:scale-[1.02] transition-transform">
+      <div className="w-full rounded-[28px] relative overflow-hidden">
+        {!imageError && imageUrl ? (
           <img
-            src={getImageUrl(movie.poster_path)}
-            alt={movie.title}
-            className="w-full h-full object-cover"
+            src={imageUrl}
+            alt={movie.name}
+            className="w-full h-[400px] object-cover"
+            loading="lazy"
+            onError={() => setImageError(true)}
           />
         ) : (
-          <div
-            className={`w-full h-full flex flex-col items-center justify-center ${getRandomColor()} p-4`}
-          >
-            <FaFilm size={64} className="text-white/80 mb-4" />
-            <h3 className="text-white text-center font-bold text-2xl break-words">
-              {movie.title}
-            </h3>
-            <p className="text-white/70 mt-2 text-sm">
-              {movie.release_date?.split("-")[0] || "No release date"}
-            </p>
+          <div className="w-full h-[400px] bg-gray-800 flex items-center justify-center">
+            <FaQuestion size={64} className="text-gray-400" />
+          </div>
+        )}
+        {movie.status && (
+          <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
+            {movie.status === "released"
+              ? "Випущено"
+              : movie.status === "ongoing"
+              ? "В процесі"
+              : movie.status === "anons"
+              ? "Анонс"
+              : movie.status === "canceled"
+              ? "Скасовано"
+              : movie.status === "rumored"
+              ? "Чутки"
+              : ""}
+          </div>
+        )}
+        {getMovieType() && (
+          <div className="absolute top-4 right-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
+            {getMovieType()}
+          </div>
+        )}
+        {movie.release_year && (
+          <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
+            {movie.release_year}
           </div>
         )}
       </div>
       <div className="w-full flex flex-col gap-[4px] items-center justify-center mt-[12px]">
-        <div className="flex items-center gap-[18px]">{renderStars()}</div>
-        <p className="text-[24px] font-bold">{movie.title}</p>
+        <div className="flex items-center gap-[8px]">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <FaStar
+              key={i}
+              size={16}
+              className={
+                i < Math.floor(rating)
+                  ? "text-yellow-400"
+                  : i < rating
+                  ? "text-yellow-300"
+                  : "text-gray-400"
+              }
+            />
+          ))}
+          {movie.imdb_score && (
+            <span className="text-gray-700 text-sm ml-1">
+              ({movie.imdb_score.toFixed(1)})
+            </span>
+          )}
+        </div>
+        <h3 className="text-[18px] font-medium text-center line-clamp-2">
+          {movie.name}
+        </h3>
+        {movie.main_genre && (
+          <span className="text-gray-500 text-sm">{movie.main_genre}</span>
+        )}
       </div>
     </div>
   );

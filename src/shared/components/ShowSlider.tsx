@@ -7,7 +7,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import {
   getTrendingMovies,
-  getImageUrl,
+  getImageUrlTMDB,
   type Movie,
 } from "../api/movieService";
 
@@ -72,9 +72,9 @@ export const ShowSlider = () => {
                 ))
               : movies.map((movie) => (
                   <SwiperSlide key={movie.id}>
-                    <div className="w-full h-[325px] overflow-hidden rounded-lg relative group">
+                    <div className="w-full h-[325px] overflow-hidden rounded-lg relative group cursor-pointer">
                       <img
-                        src={getImageUrl(movie.poster_path)}
+                        src={getImageUrlTMDB(movie.poster_path || "")}
                         alt={movie.title}
                         className="w-full h-full object-cover transition-transform group-hover:scale-105"
                       />
@@ -83,7 +83,7 @@ export const ShowSlider = () => {
                           {movie.title}
                         </h3>
                         <p className="text-white/80 text-sm">
-                          {movie.release_date.split("-")[0]}
+                          {movie.release_date?.split("-")[0]}
                         </p>
                       </div>
                     </div>

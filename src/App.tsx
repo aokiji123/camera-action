@@ -11,6 +11,7 @@ import { Payment } from "./pages/Payment";
 import { History } from "./pages/History";
 import { ProtectedRoute, GuestRoute } from "./shared/components/ProtectedRoute";
 import { Profile } from "./pages/Profile";
+import { MovieDetails } from "./pages/MovieDetails";
 
 function App() {
   return (
@@ -46,6 +47,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Series />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/movies/:slug"
+          element={
+            <ProtectedRoute>
+              <MovieDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/series/:slug"
+          element={
+            <ProtectedRoute>
+              <MovieDetails />
             </ProtectedRoute>
           }
         />

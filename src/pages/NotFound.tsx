@@ -10,7 +10,7 @@ export function NotFound() {
       </p>
       <Link
         to="/"
-        className="px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 transition-colors"
+        className="px-4 py-2 bg-gray-500 text-white rounded transition-colors"
       >
         На головну
       </Link>
