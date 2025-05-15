@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactPlayer from "react-player";
 import {
@@ -16,7 +16,17 @@ import {
   FaFilm,
   FaGlobe,
   FaTag,
+  FaPlay,
+  FaPause,
+  FaVolumeUp,
+  FaVolumeMute,
+  FaBackward,
+  FaForward,
+  FaExpand,
+  FaCompress,
+  FaClosedCaptioning,
 } from "react-icons/fa";
+import { IoMdPhotos } from "react-icons/io";
 import background from "../assets/header-bg.png";
 import { Header } from "../shared/components/Header";
 
@@ -30,6 +40,17 @@ export function MovieDetails() {
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+
+  // Player state
+  const playerRef = useRef<ReactPlayer>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const [played, setPlayed] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [seeking, setSeeking] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -72,6 +93,83 @@ export function MovieDetails() {
     } finally {
       setIsLoadingEpisodes(false);
     }
+  };
+
+  // Player functions
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleMute = () => {
+    setIsMuted(!isMuted);
+  };
+
+  const handleRewind = () => {
+    if (playerRef.current) {
+      const currentTime = playerRef.current.getCurrentTime();
+      playerRef.current.seekTo(Math.max(currentTime - 10, 0));
+    }
+  };
+
+  const handleForward = () => {
+    if (playerRef.current) {
+      const currentTime = playerRef.current.getCurrentTime();
+      playerRef.current.seekTo(Math.min(currentTime + 10, duration));
+    }
+  };
+
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPlayed(parseFloat(e.target.value));
+  };
+
+  const handleSeekMouseDown = () => {
+    setSeeking(true);
+  };
+
+  const handleSeekMouseUp = (e: React.MouseEvent<HTMLInputElement>) => {
+    setSeeking(false);
+    if (playerRef.current) {
+      playerRef.current.seekTo(
+        parseFloat((e.target as HTMLInputElement).value)
+      );
+    }
+  };
+
+  const handleProgress = (state: { played: number; playedSeconds: number }) => {
+    if (!seeking) {
+      setPlayed(state.played);
+    }
+  };
+
+  const handleDuration = (duration: number) => {
+    setDuration(duration);
+  };
+
+  const toggleFullScreen = () => {
+    if (!videoContainerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      videoContainerRef.current.requestFullscreen().catch((err) => {
+        console.error(
+          `Error attempting to enable full-screen mode: ${err.message}`
+        );
+      });
+      setIsFullScreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullScreen(false);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const pad = (str: number) => `0${Math.floor(str)}`.slice(-2);
+    const minutes = seconds / 60;
+    const hours = minutes / 60;
+
+    if (hours >= 1) {
+      return `${pad(hours)}:${pad(minutes % 60)}:${pad(seconds % 60)}`;
+    }
+    return `${pad(minutes)}:${pad(seconds % 60)}`;
   };
 
   if (isLoading) {
@@ -216,25 +314,139 @@ export function MovieDetails() {
           </div>
         ) : episodes.length > 0 ? (
           <div>
-            <h2 className="text-2xl font-bold mb-8 text-white">Відео</h2>
+            <h2 className="text-2xl font-bold mb-8 text-white">Плеєр</h2>
 
-            {/* Video player */}
-            <div className="aspect-video bg-black rounded-lg overflow-hidden mb-8">
-              {selectedEpisode && selectedEpisode.url ? (
+            {/* Custom Video player */}
+            <div
+              ref={videoContainerRef}
+              className="aspect-video bg-black rounded-lg overflow-hidden mb-8 relative"
+            >
+              <div className="absolute inset-0">
                 <ReactPlayer
-                  url={selectedEpisode.url}
+                  ref={playerRef}
+                  url={selectedEpisode?.video_players[0].url}
                   width="100%"
                   height="100%"
-                  controls
-                  playing
+                  playing={isPlaying}
+                  volume={volume}
+                  muted={isMuted}
+                  onProgress={handleProgress}
+                  onDuration={handleDuration}
+                  config={{
+                    file: {
+                      attributes: {
+                        onContextMenu: (e: React.MouseEvent) =>
+                          e.preventDefault(),
+                        controlsList: "nodownload",
+                      },
+                    },
+                  }}
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <p className="text-gray-400">
-                    Відсутнє відео для відтворення
-                  </p>
+              </div>
+
+              {/* Custom controls */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-100 transition-opacity duration-300 flex flex-col">
+                {/* Progress bar */}
+                <div className="mb-2 w-full flex items-center">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step="any"
+                    value={played}
+                    onChange={handleSeekChange}
+                    onMouseDown={handleSeekMouseDown}
+                    onMouseUp={handleSeekMouseUp}
+                    className="w-full appearance-none h-1 bg-gray-600 rounded-full cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, white ${
+                        played * 100
+                      }%, #4b5563 ${played * 100}%)`,
+                    }}
+                  />
                 </div>
-              )}
+
+                {/* Controls row */}
+                <div className="flex justify-between items-center">
+                  {/* Left controls */}
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={handlePlayPause}
+                      className="text-white hover:text-gray-300 transition-colors"
+                    >
+                      {isPlaying ? <FaPause size={18} /> : <FaPlay size={18} />}
+                    </button>
+
+                    <button
+                      onClick={handleRewind}
+                      className="text-white hover:text-gray-300 transition-colors"
+                    >
+                      <FaBackward size={18} />
+                    </button>
+
+                    <button
+                      onClick={handleForward}
+                      className="text-white hover:text-gray-300 transition-colors"
+                    >
+                      <FaForward size={18} />
+                    </button>
+
+                    <button
+                      onClick={handleMute}
+                      className="text-white hover:text-gray-300 transition-colors"
+                    >
+                      {isMuted ? (
+                        <FaVolumeMute size={18} />
+                      ) : (
+                        <FaVolumeUp size={18} />
+                      )}
+                    </button>
+
+                    <div className="w-20 hidden group-hover:block">
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step="any"
+                        value={volume}
+                        onChange={(e) => setVolume(parseFloat(e.target.value))}
+                        className="w-full appearance-none h-1 bg-gray-600 rounded-full cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, white ${
+                            volume * 100
+                          }%, #4b5563 ${volume * 100}%)`,
+                        }}
+                      />
+                    </div>
+
+                    <span className="text-white text-sm">
+                      {formatTime(duration * played)} / {formatTime(duration)}
+                    </span>
+                  </div>
+
+                  {/* Right controls */}
+                  <div className="flex items-center gap-4">
+                    <button className="text-white hover:text-gray-300 transition-colors">
+                      <IoMdPhotos size={18} />
+                    </button>
+
+                    <button className="text-white hover:text-gray-300 transition-colors">
+                      <FaClosedCaptioning size={18} />
+                    </button>
+
+                    <button
+                      onClick={toggleFullScreen}
+                      className="text-white hover:text-gray-300 transition-colors"
+                    >
+                      {isFullScreen ? (
+                        <FaCompress size={18} />
+                      ) : (
+                        <FaExpand size={18} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Episodes list */}

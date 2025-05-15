@@ -493,6 +493,12 @@ export type Episode = {
   season_number: number;
   created_at: string;
   updated_at: string;
+  video_players: {
+    id: string;
+    url: string;
+    created_at: string;
+    updated_at: string;
+  }[];
 };
 
 export type EpisodesResponse = PaginatedResponse<Episode>;
